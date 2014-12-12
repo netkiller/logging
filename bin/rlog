@@ -25,50 +25,69 @@ class Logpush():
 			where = self.file.tell()
 			line = self.file.readline()
 			if line :
-				print(line)
+				print(line.decode("utf-8").strip(''), end='')
 			else:
 				self.file.seek(where)
 				time.sleep(1)
-	def sendto(self, host, port, sleep, filepath):
+	def sendto(self, host, port, sleep, filepath, daemon = False, full=False):
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		#sock.sendto(bytes("-----\n","utf8"), (host, port))
 		self.file = open(filepath, 'rb')
-		self.file.seek(0, 2)
+		if full :
+			self.file.seek(0, 0)
+		else:
+			self.file.seek(0, 2)
 		while True:
 			where = self.file.tell()
 			line = self.file.readline()
 			if line :
-				print(line)
+				if not daemon :
+					print(line.decode("utf-8").strip(''), end='')
 				sock.sendto(line, (host, port))
 				time.sleep(sleep)
 			else:
 				self.file.seek(where)
 				time.sleep(sleep)
+	def stdin(self, host, port, sleep, daemon = False,):
+		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		line = ' '
+		while line:
+			line = sys.stdin.readline()
+			if not daemon :
+				print(line, end='')
+			sock.sendto(bytes(line,"utf8"), (host, port))
+			#time.sleep(sleep)
+		
 	def usage(self):
 		print("\n  Homepage: http://netkiller.github.io\tAuthor: Neo <netkiller@msn.com>")				
 	def main(self):
 		try:
 			parser = OptionParser(usage='usage: %prog [options] filename')
-			parser.add_option('-s', '--sendto', dest='sendto', default=False, action='store_true', help='push log to remote host')						  
-			parser.add_option('-H', '--host', dest='host', default='localhost', metavar='localhost', type='str', help='hostname')
+			parser.add_option('-H', '--host', dest='host', default='', metavar='localhost', type='str', help='push log to remote host')
 			parser.add_option('-p', '--port', dest='port', default=1214, metavar='1214', type='int',  help='port')
-			parser.add_option('', '--sleep', dest='sleep', default=0.5, metavar='0.5', type='float',
+			parser.add_option('', '--sleep', dest='sleep', default=0.1, metavar='0.1', type='float',
 						  help='with -s, sleep  for  approximately S  seconds between iterations')
 			parser.add_option('-d','--daemon', dest='daemon', default=False, action='store_true', help='run as daemon')						  
+			parser.add_option('-f', '--full', dest='full', default=False, action='store_true', help='Full text')
+			parser.add_option('', '--stdin', dest='stdin', default=False, action='store_true', help='cat file | prog ...')
+			
 			
 			(options, args) = parser.parse_args()
-			print(options.daemon)
+
 			if not len(args) == 1:
-				parser.print_help()
-				self.usage()
-				sys.exit(1)
+				if options.stdin :
+					self.stdin(options.host, options.port, options.sleep, options.daemon)
+				else:
+					parser.print_help()
+					self.usage()
+					sys.exit(1)
 			else:
-				if options.sendto:
+				if options.host and options.port:
 					if options.daemon:
 						pid = os.fork()
 						if pid > 0:
 							sys.exit(0)
-					self.sendto(options.host, options.port, options.sleep, args[0])
+					self.sendto(options.host, options.port, options.sleep, args[0], options.daemon, options.full)
 				else:
 					self.follow(args[0])
 

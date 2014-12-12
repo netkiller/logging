@@ -1,0 +1,160 @@
+#!/usr/bin/python3
+#-*- coding: utf-8 -*-
+##############################################
+# Home	: http://netkiller.github.io
+# Author: Neo <netkiller@msn.com>
+##############################################
+
+try:
+	import time
+	import sys
+	import socket
+	import os
+	import socketserver
+	import configparser
+	from optparse import OptionParser
+except ImportError as err:
+	print("Error: %s" %(err))
+
+class ShowLog(socketserver.BaseRequestHandler):
+
+	def handle(self):
+		data = self.request[0].strip()
+		#socket = self.request[1]
+		#print("{} wrote:".format(self.client_address[0]))
+		print(data.decode("utf-8"))
+		#socket.sendto(data.upper(), self.client_address)
+	
+		
+class Collection():
+	
+	def __init__(self):
+		self.basedir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+		self.cfgfile=self.basedir+'/etc/logging.ini'
+		self.config = configparser.SafeConfigParser()
+		
+		if not os.path.exists(self.cfgfile):
+			raise Exception('Cannot open file', self.cfgfile)
+		#print(self.cfgfile)
+	def configure(self,inifile, section = None):
+		conf = {}
+		try:
+			if not os.path.exists(inifile):
+				raise Exception('Cannot open file', inifile)
+			
+			config.read(inifile)
+
+			if section :
+				conf = dict(config.items(section))
+			else:
+				for sect in config.sections():
+					conf[sect] = dict(config.items(sect))
+
+		except configparser.NoSectionError as err:
+			print("Error: %s %s" %(err, inifile + ' - ' + 'No Module'))
+			sys.exit(1)
+		except Exception as err:
+			print("Error: %s %s" %(err, inifile))
+			sys.exit(1)
+		
+		self.config = conf	
+		
+	def list(self):
+		try:
+			self.config.read(self.cfgfile)
+			for sect in self.config.sections():
+				item = dict(self.config.items(sect))
+				if 'desc' in item :
+					print(sect.strip(''), '-',item['desc'])
+				else:
+					print(sect)
+		except Exception as err:
+			print("Error: %s %s" %(err, self.cfgfile))
+			sys.exit(1)
+	def module(self, mod):
+		self.config.read(self.cfgfile)
+		item = dict(self.config.items(mod))
+		port = int(self.config.get(mod,'port'))
+		server = socketserver.UDPServer(('0.0.0.0', port), ShowLog)
+		server.serve_forever()	
+	def save(self, port, logfile):
+		sock = socket.socket(socket.AF_INET, # Internet
+							socket.SOCK_DGRAM) # UDP
+		sock.bind(('0.0.0.0', port))
+		file = open(logfile, 'a', 4096)
+		while True:
+			data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
+			#self.file.seek(0, 2)
+			#where = self.file.tell()
+			if data :
+				line = file.write(data.decode("utf-8"))
+				#print("received message:", data.decode("utf-8"))
+			else:
+				file.flush()
+				
+
+	def sendto(self, host, port, sleep, filepath):
+		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		#sock.sendto(bytes("-----\n","utf8"), (host, port))
+		self.file = open(filepath, 'rb')
+		self.file.seek(0, 2)
+		while True:
+			where = self.file.tell()
+			line = self.file.readline()
+			if line :
+				print(line)
+				sock.sendto(line, (host, port))
+				time.sleep(sleep)
+			else:
+				self.file.seek(where)
+				time.sleep(sleep)
+	def usage(self):
+		print("\n  Homepage: http://netkiller.github.io\tAuthor: Neo <netkiller@msn.com>")				
+	def main(self):
+		try:
+			parser = OptionParser(usage='usage: %prog [options] module')
+			parser.add_option('-p', '--port', dest='port', default=0, metavar='1214', type='int',  help='port')
+			parser.add_option('-l', '--logfile', dest='logfile', default='', metavar='/tmp/test.log', type='str', help='log file')
+			parser.add_option('', '--list', dest='list', default=False, action='store_true', help='show module message')						  
+			#parser.add_option('', '--sleep', dest='sleep', default=0.5, metavar='0.5', type='float', help='with -s, sleep  for  approximately S  seconds between iterations')
+			parser.add_option('-d','--daemon', dest='daemon', default=False, action='store_true', help='run as daemon')						  
+			
+			(options, args) = parser.parse_args()
+			#if not options :
+			#else:
+			
+			if options.list :
+				self.list()
+				sys.exit(1)
+			
+			if len(args) == 1 and args[0] :
+				self.module(args[0])
+			
+			if options.port :
+				if options.logfile :
+					if options.daemon:
+						pid = os.fork()
+						if pid > 0:
+							sys.exit(0)
+				#	self.sendto(options.host, options.port, options.sleep, args[0])
+				#else:
+					self.save(options.port, options.logfile)
+				else:
+					server = socketserver.UDPServer(('0.0.0.0', options.port), ShowLog)
+					server.serve_forever()	
+
+			if not len(args) == 1:
+				parser.print_help()
+				self.usage()
+				sys.exit(1)				
+				
+		except Exception as err:
+			print("Error: %s %s" %(err, ''))
+			sys.exit(1)
+		
+if __name__ == '__main__':
+	try:
+		log = Collection()
+		log.main()
+	except KeyboardInterrupt:
+		print ("Crtl+C Pressed. Shutting down.")
