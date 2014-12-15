@@ -27,11 +27,13 @@ class Logpush():
 			if line :
 				print(line.decode("utf-8").strip(''), end='')
 			else:
-				self.file.seek(where)
+				if where < self.file.tell() :
+					self.file.seek(where)
+				else:
+					self.file.seek(self.file.tell())
 				time.sleep(1)
 	def sendto(self, host, port, sleep, filepath, daemon = False, full=False):
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		#sock.sendto(bytes("-----\n","utf8"), (host, port))
 		self.file = open(filepath, 'rb')
 		if full :
 			self.file.seek(0, 0)
@@ -46,7 +48,11 @@ class Logpush():
 				sock.sendto(line, (host, port))
 				time.sleep(sleep)
 			else:
-				self.file.seek(where)
+				if where < self.file.tell() :
+					self.file.seek(where)
+				else:
+					self.file.seek(self.file.tell())
+				#sock.sendto(bytes("-----\n","utf8"), (host, port))
 				time.sleep(sleep)
 	def stdin(self, host, port, sleep, daemon = False,):
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

@@ -36,7 +36,8 @@ setup(
 	],
 	scripts=[
 		'bin/auditlog',
-		'bin/rlog'
+		'bin/rlog',
+		'bin/collection'
 	],
 	data_files = [
 		('etc', ['etc/auditlog.ini']),
