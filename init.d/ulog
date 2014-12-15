@@ -1,0 +1,84 @@
+#!/bin/bash
+##############################################
+# $Author: netkiller $
+# $Id$
+# http://netkiller.github.io
+##############################################
+NAME=ulog
+BASEDIR='/var/log'
+PROG=$BASEDIR/bin/$(basename $0)
+LOGFILE=/var/tmp/$NAME.log
+PIDFILE=/var/tmp/$NAME.pid
+##############################################
+HOST=127.0.0.1
+PORT=
+LOG=""
+##############################################
+#RLOG="/usr/local/bin/rlog -d -H ${HOST} -p ${PORT} "
+RLOG="/usr/local/bin/rlog"
+DEBUG='N'
+##############################################
+#echo $$
+#echo $BASHPID
+
+function run(){
+
+	while read port log
+	do
+		if [ $DEBUG == 'Y' ]; then
+			echo $port $log
+		fi
+		
+		if [ -f $log ]; then
+			${RLOG} -d -H ${HOST} -p $port $log
+		fi
+	done << EOF
+1213 /var/log/nginx/access.log
+1214 /tmp/test.log
+1215 /tmp/$(date +"%Y-%m-%d.%H:%M:%S").log
+EOF
+
+	#for log in ${LOG}
+	#do
+	#	${RLOG} $log
+	#	echo $! > $PIDFILE
+	#done
+}
+
+function start(){
+	if [ -f "$PIDFILE" ]; then
+		echo $PIDFILE
+		exit 2
+	fi
+	run
+	#for (( ; ; ))
+	#do
+	#cd $BASEDIR/crontab/
+	#done &
+}
+function stop(){
+  	#[ -f $PIDFILE ] && kill `cat $PIDFILE` && rm -rf $PIDFILE
+	killall rlog
+	[ -f $PIDFILE ] && rm -rf $PIDFILE
+}
+
+case "$1" in
+  start)
+  	start
+	;;
+  stop)
+  	stop
+	;;
+  status)
+  	ps ax | grep rlog | grep -v grep | grep -v status
+	;;
+  restart)
+  	stop
+	start
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|status|restart}"
+	exit 2
+esac
+
+exit $?
