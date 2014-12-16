@@ -41,9 +41,9 @@ setup(
 	],
 	data_files = [
 		('etc', ['etc/auditlog.ini']),
+                ('etc', ['etc/logging.ini']),
 		('log', ['log/auditlog.log']),
 		('share', ['share/example/testing/example.com.ini'])
-		#('example/testing', ['example/testing/example.com.ini']),
 		#('example/config/testing', ['example/config/testing/www.example.com.ini']),
 		#('example/exclude/testing', ['example/exclude/testing/www.example.com.lst'])
 		

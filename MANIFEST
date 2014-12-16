@@ -4,3 +4,4 @@ bin/auditlog
 bin/collection
 bin/rlog
 etc/auditlog.ini
+etc/logging.ini

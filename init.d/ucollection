@@ -1,0 +1,82 @@
+#!/bin/bash
+##############################################
+# $Author: netkiller $
+# $Id$
+# http://netkiller.github.io
+##############################################
+BASEDIR='/usr/local'
+PROG=$BASEDIR/bin/collection
+NAME=$(basename $PROG)
+LOGFILE=/var/tmp/$NAME.log
+PIDFILE=/var/tmp/$NAME.pid
+##############################################
+#echo $$
+#echo $BASHPID
+##############################################
+DEBUG='Y'
+##############################################
+
+function run(){
+
+	while read port log
+	do
+		if [ $DEBUG == 'Y' ]; then
+			echo $port $log
+		fi
+		dirpath=$(dirname $log)
+		if [ ! -d $dirpath ]; then
+			mkdir -p $dirpath
+		fi
+		${PROG} -d -p $port -l $log
+	done << EOF
+1213 /tmp/nginx/access.log
+1214 /tmp/test/test.log
+1215 /tmp/app/$(date +"%Y-%m-%d.%H:%M:%S").log
+1216 /tmp/db/$(date +"%Y-%m-%d")/mysql.log
+1217 /tmp/cache/$(date +"%Y")/$(date +"%m")/$(date +"%d")/cache.log
+EOF
+
+	#for log in ${LOG}
+	#do
+	#	${RLOG} $log
+	#	echo $! > $PIDFILE
+	#done
+}
+
+function start(){
+	if [ -f "$PIDFILE" ]; then
+		echo $PIDFILE
+		exit 2
+	fi
+	run
+	#for (( ; ; ))
+	#do
+
+	#done &
+}
+function stop(){
+  	#[ -f $PIDFILE ] && kill `cat $PIDFILE` && rm -rf $PIDFILE
+	killall ${NAME}
+	[ -f $PIDFILE ] && rm -rf $PIDFILE
+}
+
+case "$1" in
+  start)
+  	start
+	;;
+  stop)
+  	stop
+	;;
+  status)
+  	ps ax | grep rlog | grep -v grep | grep -v status
+	;;
+  restart)
+  	stop
+	start
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|status|restart}"
+	exit 2
+esac
+
+exit $?
