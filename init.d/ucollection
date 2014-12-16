@@ -68,7 +68,7 @@ case "$1" in
   	stop
 	;;
   status)
-  	ps ax | grep rlog | grep -v grep | grep -v status
+  	ps ax | grep ${NAME} | grep -v grep | grep -v status
 	;;
   restart)
   	stop

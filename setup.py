@@ -16,11 +16,8 @@ setup(
 	keywords='logging',
 	author_email='netkiller@msn.com',
 	url='http://netkiller.github.io',
+	download_url='https://github.com/netkiller/logging',
 	license='BSD',
-	#py_modules=[
-	#	'library.rsync',
-	#	'library.whiptail'
-	#],
 	classifiers=[
 		'Development Status :: Production/Stable',
 		'Environment :: Console',
@@ -30,6 +27,11 @@ setup(
 		'Programming Language :: Python',
 		'Programming Language :: Python :: 3.4',
 	],
+	#py_modules=[
+	#	'library.rsync',
+	#	'library.whiptail'
+	#],
+	
 	#package_dir={ '': 'library' },
 	packages=[
 		''
@@ -41,7 +43,7 @@ setup(
 	],
 	data_files = [
 		('etc', ['etc/auditlog.ini']),
-                ('etc', ['etc/logging.ini']),
+		('etc', ['etc/logging.ini']),
 		('log', ['log/auditlog.log']),
 		('share', ['share/example/testing/example.com.ini'])
 		#('example/config/testing', ['example/config/testing/www.example.com.ini']),
