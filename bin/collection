@@ -60,18 +60,24 @@ class Collection():
 		sock = socket.socket(socket.AF_INET, # Internet
 							socket.SOCK_DGRAM) # UDP
 		sock.bind(('0.0.0.0', port))
+		buffer = sock.makefile()
+		
 		logging.basicConfig(filename=logfile,format='%(message)s',filemode='a', level=logging.NOTSET)
 
 		#file = open(logfile, 'a')
 		while True:
-			data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
-			if data :
+			#data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
+			#if data :
 				#file.write(data.decode("utf-8"))
-				logging.info(data.decode("utf-8"))
+				#logging.info(data.decode("utf-8"))
 				#print("received message:", data.decode("utf-8"))
 			#else:
 				#file.flush()
-
+			line = buffer.readline()
+			if line :
+				#print(line.strip())
+				logging.info(line.strip())
+			
 	def usage(self):
 		print("\n  Homepage: http://netkiller.github.io\tAuthor: Neo <netkiller@msn.com>")				
 	def main(self):
@@ -96,12 +102,10 @@ class Collection():
 			
 			if options.port :
 				if options.logfile :
-					#if options.daemon:
-						#pid = os.fork()
-						#if pid > 0:
-						#	sys.exit(0)
-				#	self.sendto(options.host, options.port, options.sleep, args[0])
-				#else:
+					if options.daemon:
+						pid = os.fork()
+						if pid > 0:
+							sys.exit(0)
 					self.save(options.port, options.logfile)
 				else:
 					server = socketserver.UDPServer(('0.0.0.0', options.port), ShowLog)
