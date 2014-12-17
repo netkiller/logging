@@ -132,7 +132,7 @@ class Logpush():
 			parser.add_option('-f', '--full', dest='full', default=False, action='store_true', help='Full text')
 			parser.add_option('', '--stdin', dest='stdin', default=False, action='store_true', help='cat file | prog ...')
 			parser.add_option('-e', '--errlog', dest='errlog', default='/tmp/rlog.log', metavar='/tmp/rlog.log', type='string',help='error log')
-			parser.add_option('-s', '--scan', dest='scan', default='/tmp/rlog.log', metavar='/tmp/rlog.log', type='string',help='error log')
+			#parser.add_option('-s', '--scan', dest='scan', default='/tmp/rlog.log', metavar='/tmp/rlog.log', type='string',help='error log')
 			
 			(options, args) = parser.parse_args()
 

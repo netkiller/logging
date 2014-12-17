@@ -10,7 +10,7 @@ setup(
 	name='logging',
 	#version=__version__,
 	#author=__author__,
-	version='0.0.1',
+	version='0.0.2',
 	description="log send to remote",
 	long_description=readme + '\n\n' + changes,
 	keywords='logging',

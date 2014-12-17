@@ -7,9 +7,9 @@
 
 try:
 	import time
-	import sys
+	import os, sys
 	import socket
-	import os
+	import logging
 	import socketserver
 	import configparser
 	from optparse import OptionParser
@@ -36,28 +36,6 @@ class Collection():
 		if not os.path.exists(self.cfgfile):
 			raise Exception('Cannot open file', self.cfgfile)
 		#print(self.cfgfile)
-	def configure(self,inifile, section = None):
-		conf = {}
-		try:
-			if not os.path.exists(inifile):
-				raise Exception('Cannot open file', inifile)
-			
-			config.read(inifile)
-
-			if section :
-				conf = dict(config.items(section))
-			else:
-				for sect in config.sections():
-					conf[sect] = dict(config.items(sect))
-
-		except configparser.NoSectionError as err:
-			print("Error: %s %s" %(err, inifile + ' - ' + 'No Module'))
-			sys.exit(1)
-		except Exception as err:
-			print("Error: %s %s" %(err, inifile))
-			sys.exit(1)
-		
-		self.config = conf	
 		
 	def list(self):
 		try:
@@ -77,37 +55,23 @@ class Collection():
 		port = int(self.config.get(mod,'port'))
 		server = socketserver.UDPServer(('0.0.0.0', port), ShowLog)
 		server.serve_forever()	
+
 	def save(self, port, logfile):
 		sock = socket.socket(socket.AF_INET, # Internet
 							socket.SOCK_DGRAM) # UDP
 		sock.bind(('0.0.0.0', port))
-		file = open(logfile, 'a', 4096)
+		logging.basicConfig(filename=logfile,format='%(message)s',filemode='a', level=logging.NOTSET)
+
+		#file = open(logfile, 'a')
 		while True:
 			data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
-			#self.file.seek(0, 2)
-			#where = self.file.tell()
 			if data :
-				line = file.write(data.decode("utf-8"))
+				#file.write(data.decode("utf-8"))
+				logging.info(data.decode("utf-8"))
 				#print("received message:", data.decode("utf-8"))
-			else:
-				file.flush()
-				
+			#else:
+				#file.flush()
 
-	def sendto(self, host, port, sleep, filepath):
-		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		#sock.sendto(bytes("-----\n","utf8"), (host, port))
-		self.file = open(filepath, 'rb')
-		self.file.seek(0, 2)
-		while True:
-			where = self.file.tell()
-			line = self.file.readline()
-			if line :
-				print(line)
-				sock.sendto(line, (host, port))
-				time.sleep(sleep)
-			else:
-				self.file.seek(where)
-				time.sleep(sleep)
 	def usage(self):
 		print("\n  Homepage: http://netkiller.github.io\tAuthor: Neo <netkiller@msn.com>")				
 	def main(self):
@@ -132,10 +96,10 @@ class Collection():
 			
 			if options.port :
 				if options.logfile :
-					if options.daemon:
-						pid = os.fork()
-						if pid > 0:
-							sys.exit(0)
+					#if options.daemon:
+						#pid = os.fork()
+						#if pid > 0:
+						#	sys.exit(0)
 				#	self.sendto(options.host, options.port, options.sleep, args[0])
 				#else:
 					self.save(options.port, options.logfile)
