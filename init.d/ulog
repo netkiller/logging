@@ -58,7 +58,7 @@ function start(){
 }
 function stop(){
   	#[ -f $PIDFILE ] && kill `cat $PIDFILE` && rm -rf $PIDFILE
-	killall rlog
+	pkill -x rlog
 	[ -f $PIDFILE ] && rm -rf $PIDFILE
 }
 
