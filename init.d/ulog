@@ -4,18 +4,19 @@
 # $Id$
 # http://netkiller.github.io
 ##############################################
-NAME=ulog
-BASEDIR='/var/log'
+BASEDIR='/usr/local'
 PROG=$BASEDIR/bin/$(basename $0)
+NAME=$(basename $PROG)
 LOGFILE=/var/tmp/$NAME.log
 PIDFILE=/var/tmp/$NAME.pid
 ##############################################
 HOST=127.0.0.1
 PORT=
 LOG=""
+LOGDIR=/www/log
 ##############################################
 #RLOG="/usr/local/bin/rlog -d -H ${HOST} -p ${PORT} "
-RLOG="/usr/local/bin/rlog"
+RLOG="${PROG} -f"
 DEBUG='N'
 ##############################################
 #echo $$
@@ -34,15 +35,20 @@ function run(){
 		fi
 	done << EOF
 1213 /var/log/nginx/access.log
-1214 /tmp/test.log
+1214 /${LOGDIR}/test.log
 1215 /tmp/$(date +"%Y-%m-%d.%H:%M:%S").log
 EOF
 
-	#for log in ${LOG}
-	#do
-	#	${RLOG} $log
-	#	echo $! > $PIDFILE
-	#done
+}
+
+function compress(){
+	# $(date -d "yesterday" +"%Y-%m-%d.%H:%M:%S")
+	for zlog in $(ls -1 ${LOGDIR}/*.$(date -d "yesterday" +"%Y-%m-%d").log)
+	do
+		if [ -f $zlog ]; then
+			gzip $zlog &
+		fi
+	done
 }
 
 function start(){
@@ -51,9 +57,10 @@ function start(){
 		exit 2
 	fi
 	run
+	compress
+	
 	#for (( ; ; ))
 	#do
-	#cd $BASEDIR/crontab/
 	#done &
 }
 function stop(){
