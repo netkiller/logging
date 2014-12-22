@@ -33,7 +33,7 @@ function run(){
 		if [ -f $log ]; then
 			${RLOG} -d --postion -H ${HOST} -p $port $log
 		else
-			${RLOG} -d -f -H ${HOST} -p $port $log
+			${RLOG} -d -f --postion -H ${HOST} -p $port $log
 		fi
 	done << EOF
 1213 /var/log/nginx/access.log
