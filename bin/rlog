@@ -8,8 +8,9 @@
 try:
 	import time
 	import os, sys
+	import hashlib
 	import socket
-	import logging
+	import logging,logging.handlers
 	from optparse import OptionParser
 except ImportError as err:
 	print("Error: %s" %(err))
@@ -17,7 +18,7 @@ except ImportError as err:
 class Logpush():
 	def __init__(self):
 		self.line_terminators = ('\r\n', '\n', '\r')
-		
+		self.postion = False
 	def errlog(self, file):
 		log = None
 		try:
@@ -29,9 +30,10 @@ class Logpush():
 				filemode='a'
 			)
 			log = logging.getLogger()
-			#handler = logging.handlers.TimedRotatingFileHandler(file, 'M', 1, 0)
-			#handler.suffix = "%Y%m%d-%H%M.log"
-			#log.addHandler(handler)
+			handler = logging.handlers.TimedRotatingFileHandler(file, 'M', 1, 0)
+			#handler.suffix = "%Y-%m-%d.%H-%M.log"
+			handler.suffix = "%Y-%m-%d.log"
+			log.addHandler(handler)
 		except AttributeError as err:
 			print("Error: %s %s" %(err, file))
 			sys.exit(2)
@@ -60,6 +62,11 @@ class Logpush():
 	def sendto(self, host, port, sleep, filepath, daemon = False, full=False):
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		self.log.info("connect: %s, port: %s, sleep: %s, logfile: %s, full text: %s" % (host, str(port), str(sleep), filepath, full) )
+		
+		m = hashlib.md5()
+		m.update(filepath.encode('utf-8'))
+		postion_file = '/dev/shm/'+str(port)+'-'+str(m.hexdigest())+'.pos'
+		
 		while True:
 			if os.path.isfile(filepath):
 				self.file = open(filepath, 'rb')
@@ -76,19 +83,38 @@ class Logpush():
 
 			if full :
 				self.file.seek(0, 0)
+				self.log.info("full text %s %s" % (filepath, str(port)) )
 			else:
-				self.file.seek(0, 2)
+				if self.postion and os.path.isfile(postion_file):
+					with open(postion_file, 'r') as pos:
+						postion = int(pos.readline())
+					if postion :
+						self.file.seek(postion)	
+						self.log.info("open postion %s %s %s." % (filepath, str(port), str(postion)) )
+					else:
+						self.file.seek(0, os.SEEK_END)
+						self.log.info("reset postion seek end %s %s" % (filepath, str(port)) )
+				else:			
+					self.file.seek(0, 2)
+					self.log.info("seek end %s %s" % (filepath, str(port)) )
+					
 			while True:
-				where = self.file.tell()
+				postion = self.file.tell()
 				line = self.file.readline()
 				if line :
 					if not daemon :
 						print(line.decode("utf-8").strip(''), end='')
 					sock.sendto(line, (host, port))
+					if self.postion :
+						#if postion != self.file.tell() :
+						with open(postion_file, 'w') as pos:
+							pos.write(str(self.file.tell()))
+							pos.close()
+						self.log.info("save postion %s %s %s." % (filepath, str(port), str(postion)) )
 					time.sleep(sleep)
 					#self.log.info("%s: %s" % (filepath, str(where)) )
 				else:
-					self.file.seek(where)					
+					self.file.seek(postion)					
 					if not os.path.isfile(filepath):
 						self.file.close()
 						full = True
@@ -97,18 +123,15 @@ class Logpush():
 					else:
 						curr_size = os.stat(filepath).st_size
 						if size > curr_size : 
-							self.file.seek(0, os.SEEK_END)
 							self.log.warning("%s: size %s, current: %s" % (filepath, str(size), str(curr_size)) )
+							self.file.close()
+							full = True
+							break
 							#continue
-					#else:
-					#	if ctime != os.stat(filepath).st_ctime :
-					#		self.file.close()
-					#		full = True
-					#		self.log.warning("%s %s, %s." % (filepath, ctime, os.stat(filepath).st_ctime) )
-					#		break
+					time.sleep(1)
 					#sock.sendto(bytes("-----\n","utf8"), (host, port))
 					#time.sleep(sleep)
-					time.sleep(0.5)
+
 	def stdin(self, host, port, sleep, daemon = False,):
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		line = ' '
@@ -132,7 +155,7 @@ class Logpush():
 			parser.add_option('-f', '--full', dest='full', default=False, action='store_true', help='Full text')
 			parser.add_option('', '--stdin', dest='stdin', default=False, action='store_true', help='cat file | prog ...')
 			parser.add_option('-e', '--errlog', dest='errlog', default='/tmp/rlog.log', metavar='/tmp/rlog.log', type='string',help='error log')
-			#parser.add_option('-s', '--scan', dest='scan', default='/tmp/rlog.log', metavar='/tmp/rlog.log', type='string',help='error log')
+			parser.add_option('', '--postion', dest='postion', default=False, action='store_true', help='save postion of log file')
 			
 			(options, args) = parser.parse_args()
 
@@ -151,6 +174,7 @@ class Logpush():
 						pid = os.fork()
 						if pid > 0:
 							sys.exit(0)
+					self.postion = options.postion
 					self.sendto(options.host, options.port, options.sleep, args[0], options.daemon, options.full)
 				else:
 					self.follow(args[0])

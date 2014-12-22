@@ -16,7 +16,7 @@ LOG=""
 LOGDIR=/www/log
 ##############################################
 #RLOG="/usr/local/bin/rlog -d -H ${HOST} -p ${PORT} "
-RLOG="${PROG} -f"
+RLOG="${PROG}"
 DEBUG='N'
 ##############################################
 #echo $$
@@ -31,7 +31,9 @@ function run(){
 		fi
 		
 		if [ -f $log ]; then
-			${RLOG} -d -H ${HOST} -p $port $log
+			${RLOG} -d --postion -H ${HOST} -p $port $log
+		else
+			${RLOG} -d -f -H ${HOST} -p $port $log
 		fi
 	done << EOF
 1213 /var/log/nginx/access.log
