@@ -12,6 +12,7 @@ PIDFILE=/var/tmp/$NAME.pid
 ##############################################
 #echo $$
 #echo $BASHPID
+LOGDIR=/tmp/log
 ##############################################
 DEBUG='Y'
 ##############################################
@@ -29,11 +30,15 @@ function run(){
 		fi
 		${PROG} -d -p $port -l $log
 	done << EOF
-1213 /tmp/nginx/access.log
-1214 /tmp/test/test.log
-1215 /tmp/app/$(date +"%Y-%m-%d.%H:%M:%S").log
-1216 /tmp/db/$(date +"%Y-%m-%d")/mysql.log
-1217 /tmp/cache/$(date +"%Y")/$(date +"%m")/$(date +"%d")/cache.log
+1214 /tmp/var/log/auth.log
+1215 /tmp/var/log/dmesg
+1216 /tmp/var/log/syslog
+1217 /tmp/var/log/nginx/access.log	
+1218 /tmp/nginx/access.log
+1219 ${LOGDIR}/test.log
+1220 /tmp/app/$(date +"%Y-%m-%d.%H:%M:%S").log
+1221 /tmp/db/$(date +"%Y-%m-%d")/mysql.log
+1222 /tmp/cache/$(date +"%Y")/$(date +"%m")/$(date +"%d")/cache.log
 EOF
 
 	#for log in ${LOG}
@@ -43,15 +48,25 @@ EOF
 	#done
 }
 
+function compress(){
+	# $(date -d "yesterday" +"%Y-%m-%d.%H:%M:%S")
+	for zlog in $(ls -1 ${LOGDIR}/*.$(date -d "yesterday" +"%Y-%m-%d").log)
+	do
+		if [ -f $zlog ]; then
+			gzip $zlog &
+		fi
+	done
+}
+
 function start(){
 	if [ -f "$PIDFILE" ]; then
 		echo $PIDFILE
 		exit 2
 	fi
 	run
+	compress
 	#for (( ; ; ))
 	#do
-
 	#done &
 }
 function stop(){

@@ -5,7 +5,7 @@
 # http://netkiller.github.io
 ##############################################
 BASEDIR='/usr/local'
-PROG=$BASEDIR/bin/$(basename $0)
+PROG=$BASEDIR/bin/rlog
 NAME=$(basename $PROG)
 LOGFILE=/var/tmp/$NAME.log
 PIDFILE=/var/tmp/$NAME.pid
@@ -36,9 +36,12 @@ function run(){
 			${RLOG} -d -f --postion -H ${HOST} -p $port $log
 		fi
 	done << EOF
-1213 /var/log/nginx/access.log
-1214 /${LOGDIR}/test.log
-1215 /tmp/$(date +"%Y-%m-%d.%H:%M:%S").log
+1214 /var/log/auth.log
+1215 /var/log/dmesg
+1216 /var/log/syslog
+1217 /var/log/nginx/access.log
+1218 ${LOGDIR}/test.log
+1219 ${LOGDIR}/$(date +"%Y-%m-%d.%H:%M:%S").log
 EOF
 
 }
