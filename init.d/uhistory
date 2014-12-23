@@ -13,7 +13,6 @@ PIDFILE=/var/tmp/$NAME.pid
 HOST=127.0.0.1
 PORT=
 LOG=""
-LOGDIR=/www/log
 ##############################################
 #RLOG="/usr/local/bin/rlog -d -H ${HOST} -p ${PORT} "
 RLOG="${PROG}"
@@ -24,36 +23,24 @@ DEBUG='N'
 
 function run(){
 
-	while read port log
+	while read port user
 	do
+		history=/home/$user/.bash_history 
 		if [ $DEBUG == 'Y' ]; then
-			echo $port $log
+			echo $port $user
 		fi
 		
-		if [ -f $log ]; then
-			${RLOG} -d --postion -H ${HOST} -p $port $log
+		if [ -f $history ]; then
+			${RLOG} -d --postion -H ${HOST} -p $port $history
 		else
-			${RLOG} -d -f --postion -H ${HOST} -p $port $log
+			${RLOG} -d -f --postion -H ${HOST} -p $port $history
 		fi
 	done << EOF
-1214 /var/log/auth.log
-1215 /var/log/dmesg
-1216 /var/log/syslog
-1217 /var/log/nginx/access.log
-1218 ${LOGDIR}/test.log
-1219 ${LOGDIR}/$(date +"%Y-%m-%d.%H:%M:%S").log
+1220 neo
+1221 jam
+1222 sam
 EOF
 
-}
-
-function compress(){
-	# $(date -d "yesterday" +"%Y-%m-%d.%H:%M:%S")
-	for zlog in $(ls -1 ${LOGDIR}/*.$(date -d "yesterday" +"%Y-%m-%d").log)
-	do
-		if [ -f $zlog ]; then
-			gzip $zlog &
-		fi
-	done
 }
 
 function start(){
@@ -62,15 +49,13 @@ function start(){
 		exit 2
 	fi
 	run
-	compress
 	
 	#for (( ; ; ))
 	#do
 	#done &
 }
 function stop(){
-  	#[ -f $PIDFILE ] && kill `cat $PIDFILE` && rm -rf $PIDFILE
-	pkill -x ${NAME}
+	pkill -f .bash_history
 	[ -f $PIDFILE ] && rm -rf $PIDFILE
 }
 
@@ -82,7 +67,7 @@ case "$1" in
   	stop
 	;;
   status)
-  	ps ax | grep ${NAME} | grep -v grep | grep -v status
+  	ps ax | grep .bash_history | grep -v grep | grep -v status
 	;;
   restart)
   	stop
