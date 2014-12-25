@@ -1,0 +1,57 @@
+#!/usr/bin/expect
+###################################
+# $Id$
+# Author: netkiller@msn.com
+# Home:	http://netkiller.github.io
+###################################
+
+if { $argc < 4 } {
+        puts stderr "Usage: <ipaddr> <username> <password> <enable>.\n"
+        exit 1
+}
+log_user 0
+
+set timeout 30
+set host [lindex $argv 0]
+set username [lindex $argv 1]
+set password [lindex $argv 2]
+set enable [lindex $argv 3]
+set done 0
+ 
+#log_file $host.log
+
+spawn telnet $host
+expect "Username:"
+send "$username\r"
+expect "Password:"
+send "$password\r"
+expect "*>"
+send "enable\r"
+expect "Password: "
+send "$enable\r"
+expect "*#"
+send "terminal length 0\r"
+expect "*#"
+send "!\r"
+log_user 1
+expect "*#"
+send -- "show running-config\r"
+
+while {$done == 0} {
+	expect {
+		" --More--" { 
+			send -- " "
+			#exp_continue
+		}
+		"*#" { set done 1 }
+		eof { set done 1 }
+	}
+}
+
+log_user 0
+
+send "\r"
+expect "*#"
+send "exit\r"
+expect eof
+exit

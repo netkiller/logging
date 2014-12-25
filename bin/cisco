@@ -1,0 +1,114 @@
+#!/bin/bash
+###################################
+# $Id$
+# Author: netkiller@msn.com
+# Home:	http://netkiller.github.io
+###################################
+BASEDIR='/usr/local'
+PROG=$BASEDIR/bin/cisco
+NAME=$(basename $PROG)
+LOGFILE=/var/tmp/$NAME.log
+PIDFILE=/var/tmp/$NAME.pid
+LIBEXEC=$BASEDIR/libexec
+###################################
+CFGFILE=$BASEDIR/etc/cisco.conf
+BACKUP_DIR=~/.backup
+####################################
+umask 0066
+####################################
+#rotate=60
+LOOP=30
+##############################################
+function backup(){
+	test ! -d "$BACKUP_DIR" && echo "Error: $BACKUP_DIR isn't a directory." && exit 0
+	cd $BACKUP_DIR
+	iostype=$1
+	cfgfile=$2
+	if [ $(stat -c "%a" $cfgfile) != 600 ]; then
+		echo "Sorry, You must be set up access rights 600 $cfgfile." 
+		#chmod 600 $cfgfile
+		exit
+	fi 
+	if [ $iostype == "ROUTE" ]; then
+		while read ipaddr user password enable
+		do
+			test ! -d "$BACKUP_DIR/$ipaddr" && mkdir -p "$BACKUP_DIR/$ipaddr"
+			${LIBEXEC}/route.exp $ipaddr $user $password $enable > $BACKUP_DIR/$ipaddr/route.running-config
+		done < ${cfgfile}
+	fi
+	if [ $iostype == "SWITCH" ]; then
+		while read ipaddr password enable
+		do
+			test ! -d "$BACKUP_DIR/$ipaddr" && mkdir -p "$BACKUP_DIR/$ipaddr"
+			${LIBEXEC}/switch.exp $ipaddr $password $enable > $BACKUP_DIR/$ipaddr/switch.running-config 2>&1
+		done < ${cfgfile}
+	fi
+	TIMEPOINT=$(date -u +%Y-%m-%d.%H:%M:%S)
+	git add .
+	git commit --quiet -m "$TIMEPOINT" > /dev/null 2>&1
+}
+##############################################
+
+function start(){
+	if [ -f "$PIDFILE" ]; then
+		echo "The program is running $PIDFILE"
+		exit 2
+	fi
+	test ! -w $BACKUP_DIR && echo "Error: $BACKUP_DIR is un-writeable." && exit 0
+	
+	for (( ; ; ))
+	do
+		backup ROUTE $CFGFILE
+		#backup SWITCH $CFGFILE
+		sleep $LOOP
+	done &
+	echo $! > $PIDFILE
+}
+function stop(){
+  	[ -f $PIDFILE ] && kill `cat $PIDFILE` && rm -rf $PIDFILE
+}
+function init(){
+	giturl=$1
+	if [ ! -d $BACKUP_DIR ]; then
+		mkdir -p "$BACKUP_DIR"
+		cd $BACKUP_DIR
+		if [ -z $giturl ]; then
+			git init
+			echo $giturl
+		else
+			git clone $giturl .
+		fi
+	fi
+
+}
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	status)
+		ps ax | grep $(basename $0) | grep -v grep | grep -v status
+		;;
+	restart)
+		stop
+		start
+		;;
+	init)
+		init $2
+		;;
+	clean)
+		read -t "5" -p "Are you sure you want to continue remove? [y/n]" -n 1 key
+		key=${key:='n'}
+		echo
+		if [ $key == 'y' ]; then
+			rm -rf $BACKUP_DIR
+		fi
+		;;
+	*)
+		echo $"Usage: $0 {init|start|stop|status|restart|clean}"
+		exit 127
+esac
+
+exit $?

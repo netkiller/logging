@@ -1,0 +1,35 @@
+#!/usr/bin/expect
+###################################
+# $Id$
+# Author: netkiller@msn.com
+# Home:	http://netkiller.github.io
+###################################
+set timeout 30
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+set done 0
+ 
+log_file $host.log
+spawn telnet $host
+expect "Password:"
+send "$password\r"
+expect "*>"
+send "enable\r"
+expect "Password: "
+send "$password\r"
+expect "*#"
+send "show running-config\r"
+ 
+while {$done == 0} {
+expect {
+" --More--" { send -- " " }
+"*#" { set done 1 }
+eof { set done 1 }
+}
+}
+ 
+send "\r"
+expect "*#"
+send "exit\r"
+expect eof
+exit

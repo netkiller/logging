@@ -10,7 +10,7 @@ setup(
 	name='logging',
 	#version=__version__,
 	#author=__author__,
-	version='0.0.2',
+	version='0.0.3',
 	description="log send to remote",
 	long_description=readme + '\n\n' + changes,
 	keywords='logging',
@@ -39,16 +39,15 @@ setup(
 	scripts=[
 		'bin/auditlog',
 		'bin/rlog',
-		'bin/collection'
+		'bin/collection',
+		'bin/cisco'
 	],
 	data_files = [
 		('etc', ['etc/auditlog.ini']),
 		('etc', ['etc/logging.ini']),
-		('log', ['log/auditlog.log']),
-		('share', ['share/example/testing/example.com.ini'])
-		#('example/config/testing', ['example/config/testing/www.example.com.ini']),
-		#('example/exclude/testing', ['example/exclude/testing/www.example.com.lst'])
-		
+		#('log', ['log/auditlog.log']),
+		('share', ['share/dmesg.reg']),
+		('etc', ['etc/cisco.conf']),
+		('libexec', ['libexec/switch.exp', 'libexec/route.exp'])
 	]
 )
-
