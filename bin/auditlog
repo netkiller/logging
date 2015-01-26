@@ -85,7 +85,15 @@ class Auditlog():
 				#for regex in regexs:
 				#	if re.search(regex, line):
 					print(line.strip())
-
+	
+	def stdin(self, regexs):
+		line=' '
+		while line:
+			line = sys.stdin.readline()
+			if self.matching(regexs,line) :
+				print(line.strip())
+			#print(line)
+			
 	def daemon(self, section):
 		if not section :
 			sys.exit(1)
@@ -156,17 +164,18 @@ class Auditlog():
 		except Exception as err:
 			print("Error: %s %s" %(err, ''))
 			sys.exit(1)
-			
+
 	def main(self):
 		try:
 			usage = "usage: %prog [options] <module>"
-			usage += "\n  Homepage: http://netkiller.github.com\n  Author: Neo <netkiller@msn.com>"
-			self.parser = OptionParser(usage)
+			usage += "\n  Homepage: http://netkiller.github.io  Author: Neo <netkiller@msn.com>"
+			self.parser = OptionParser(usage, version='0.0.1', description='log filter')
 
 			self.parser.add_option('-d','--daemon', dest='daemon', action='store_true', default=False, help='run as daemon')
 			self.parser.add_option("-l", "--logfile", dest="logfile", default=None,help="log file example: /var/log/message")
+			self.parser.add_option('-i', '--stdin', dest='stdin', default=False, action='store_true', help='cat file | prog ...')
 			self.parser.add_option('-r','--regex', type="string", dest="regex", default=None, help='loading log file matching regex/regexp. example: ^Feb')
-			self.parser.add_option('','--regular', dest="regular", default=None, help='regular file')
+			self.parser.add_option('-f','--regular', dest="regular", default=None, help='regular file')
 			self.parser.add_option('', "--debug", action="store_true", help="Print debug information")
 
 			(self.options, self.args) = self.parser.parse_args()
@@ -199,6 +208,18 @@ class Auditlog():
 							regexs.append(regex.strip())
 
 					self.filter(self.options.logfile, regexs)
+			elif self.options.stdin :
+				regexs = []
+				if self.options.regex:
+					regexs.append(self.options.regex.strip())
+				if self.options.regular:
+					regular = self.options.regular
+					if not os.path.exists(regular):
+						raise Exception('Cannot open file', regular)
+					with open(regular,'r') as regulardata:
+						for regex in regulardata:
+							regexs.append(regex.strip())
+				self.stdin(regexs)
 			else:
 				
 				if len(self.args) > 0 and self.args[0] :
@@ -208,13 +229,14 @@ class Auditlog():
 						print(section)
 					self.daemon(section)
 				else:
-					if self.options.debug:
-						print(self.config)
-					self.configure(self.basedir+'/etc/'+'auditlog.ini')
-					for section in self.config:
-						self.daemon(self.config[section])
+					self.usage()
+				#	if self.options.debug:
+				#		print(self.config)
+				#	self.configure(self.basedir+'/etc/'+'auditlog.ini')
+				#	for section in self.config:
+				#		self.daemon(self.config[section])
 		except Exception as err:
-			print("Error: %s %s" %(err, 'auditlog.ini'))
+			print("%s %s" %(err, ''))
 			sys.exit(1)		
 if __name__ == '__main__':
 	try:
