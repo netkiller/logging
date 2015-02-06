@@ -4,6 +4,11 @@
 # $Id$
 # http://netkiller.github.io
 ##############################################
+# chkconfig: 345 99 01
+# description: log send
+# processname: send
+# File : end
+##############################################
 BASEDIR='/usr/local'
 PROG=$BASEDIR/bin/rlog
 NAME=$(basename $PROG)
