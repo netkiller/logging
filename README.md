@@ -8,6 +8,10 @@ Install
 	$ python3 setup.py sdist
 	$ python3 setup.py install
 	
+	cp init.d/ulog /etc/init.d/
+	chkconfig --add ulog
+	chkconfig ulog on
+	
 Example
 -----
 
