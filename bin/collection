@@ -61,18 +61,21 @@ class Collection():
 							socket.SOCK_DGRAM) # UDP
 		sock.bind(('0.0.0.0', port))
 		buffer = sock.makefile()
-		
-		logging.basicConfig(filename=logfile,format='%(message)s',filemode='a', level=logging.NOTSET)
-		log = logging.getLogger()
+	
+		logger = logging.getLogger()
+		logger.setLevel(logging.DEBUG)
 		handler = logging.handlers.TimedRotatingFileHandler(logfile, 'D', 1, 0)
-		handler.suffix = "%Y-%m-%d"
-		log.addHandler(handler)
+		handler.suffix = "%Y-%m-%d.log"
+		#formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+		formatter = logging.Formatter('%(message)s', datefmt='')
+		handler.setFormatter(formatter)
+		logger.addHandler(handler)
 
 		while True:
 			line = buffer.readline()
 			if line :
 				#print(line.strip())
-				log.info(line.strip())
+				logger.info(line.strip())
 			
 	def usage(self):
 		print("\n  Homepage: http://netkiller.github.io\tAuthor: Neo <netkiller@msn.com>")				
