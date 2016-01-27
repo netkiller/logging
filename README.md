@@ -73,4 +73,4 @@ Logs collection
 	
 Audit log
 ------
-[Audit log tools](https://github.com/oscm/devops/blob/master/doc/auditlog.md).
+[Audit log tools](doc/auditlog.md).

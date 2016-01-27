@@ -1,6 +1,13 @@
 Auditlog
 ======
 
+Setup
+-----
+### CentOS 7
+	yum install python34 git
+	git clone https://github.com/netkiller/logging.git
+	python3.4 setup.py sdist
+	python3.4 setup.py install
 
 Help
 ----
@@ -65,8 +72,32 @@ Configure
 ### regular
 	$ cat syslog.reg
 	^Feb
-	:09:	
-	
+	:09:
+
 Daemon
 ------
-	$ python3 auditlog -d
+	$ python3 auditlog -d dmesg
+	
+Example
+-----
+### maillog
+	# cat /usr/etc/auditlog.ini 
+
+	[maillog]
+	logfile=/var/log/maillog
+	exclude=/usr/etc/maillog.reg
+
+	# cat /usr/etc/maillog.reg
+	Connection timed out
+	Network is unreachable
+	Connection frequency limited
+	removed
+	message-id
+	sender non-delivery notification
+	disconnect
+	connect from
+	client=
+	queue active
+	lost connection after AUTH from
+	
+	$ auditlog dmesg
