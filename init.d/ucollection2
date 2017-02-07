@@ -1,0 +1,94 @@
+#!/bin/bash
+##############################################
+# $Author: netkiller $
+# $Id$
+# http://netkiller.github.io
+##############################################
+# chkconfig: 345 99 01
+# description: log collection
+# processname: collection
+# File : collection
+##############################################
+BASEDIR='/usr/local'
+PROG=$BASEDIR/bin/collection
+NAME=$(basename $PROG)
+LOGFILE=/var/tmp/$NAME.log
+PIDFILE=/var/tmp/$NAME.pid
+##############################################
+#echo $$
+#echo $BASHPID
+CONFFILE=/srv/logging/log.conf
+LOGDIR=/www/log
+##############################################
+DEBUG='Y'
+##############################################
+
+function run(){
+
+	while IFS=" " read -r port logfile || [[ -n "$port" ]]; do
+
+		if [ $DEBUG == 'Y' ]; then
+			echo $port $logfile
+		fi
+		dirpath=$(dirname $logfile)
+		if [ ! -d $dirpath ]; then
+			mkdir -p $dirpath
+		fi
+		${PROG} -d -p $port -l ${LOGDIR}/$logfile
+			
+	done < "$1"
+
+	#for log in ${LOG}
+	#do
+	#	${RLOG} $log
+	#	echo $! > $PIDFILE
+	#done
+}
+
+function compress(){
+	# $(date -d "yesterday" +"%Y-%m-%d.%H:%M:%S")
+	for zlog in $(ls -1 ${LOGDIR}/*.$(date -d "yesterday" +"%Y-%m-%d").log)
+	do
+		if [ -f $zlog ]; then
+			gzip $zlog &
+		fi
+	done
+}
+
+function start(){
+	if [ -f "$PIDFILE" ]; then
+		echo $PIDFILE
+		exit 2
+	fi
+	run ${CONFFILE}
+	compress
+	#for (( ; ; ))
+	#do
+	#done &
+}
+function stop(){
+  	#[ -f $PIDFILE ] && kill `cat $PIDFILE` && rm -rf $PIDFILE
+	pkill -x ${NAME}
+	[ -f $PIDFILE ] && rm -rf $PIDFILE
+}
+
+case "$1" in
+  start)
+  	start
+	;;
+  stop)
+  	stop
+	;;
+  status)
+  	ps ax | grep ${NAME} | grep -v grep | grep -v status
+	;;
+  restart)
+  	stop
+	start
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|status|restart}"
+	exit 2
+esac
+
+exit $?
