@@ -12,7 +12,7 @@ with open("CHANGES.md", "r") as file:
 setup(
 	name='netkiller-logging',
 	#version=__version__,
-	version='0.0.4',
+	version='0.0.5',
 	#author=__author__,
 	author_email='netkiller@msn.com',
 	description="log send to remote",
@@ -38,7 +38,6 @@ setup(
 	
 	#package_dir={ '': 'library' },
 	packages=find_packages(),
-	# packages=[''],
 	scripts=[
 		'bin/auditlog',
 		'bin/rlog',
