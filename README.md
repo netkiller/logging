@@ -3,6 +3,34 @@ logging
 
 Install
 -------
+
+	[root@localhost ~]# pip3 install netkiller-logging
+	
+	[root@localhost ~]# whereis rlog 
+	rlog: /usr/local/bin/rlog
+
+	[root@localhost ~]# rlog 
+	Usage: rlog [options] filename
+
+	Options:
+	-h, --help            show this help message and exit
+	-H localhost, --host=localhost
+							push log to remote host
+	-p 1214, --port=1214  port
+	--sleep=0.05          with -s, sleep  for  approximately S  seconds between
+							iterations
+	-d, --daemon          run as daemon
+	-f, --full            Full text
+	--stdin               cat file | prog ...
+	-e /tmp/rlog.log, --errlog=/tmp/rlog.log
+							error log
+	--postion             save postion of log file
+
+	Homepage: http://netkiller.github.io	Author: Neo <netkiller@msn.com>
+
+Source 
+------
+
 	$ git clone https://github.com/netkiller/logging.git
 	$ cd logging
 	$ python3 setup.py sdist

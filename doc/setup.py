@@ -1,29 +1,25 @@
 import os,sys
-from setuptools import setup,find_packages
+from distutils.core import setup
 sys.path.insert(0, os.path.abspath('lib'))
 #from library import __version__, __author__
 #print (__version__)
-with open("README.md", "r") as file:
-  long_description = file.read()
-
-with open("CHANGES.md", "r") as file:
-  changes = file.read()
+readme = open('README.md').read()
+changes = open('CHANGES.md').read()
 
 setup(
-	name='netkiller-logging',
+	name='logging',
 	#version=__version__,
-	version='0.0.4',
 	#author=__author__,
-	author_email='netkiller@msn.com',
+	version='0.0.3',
 	description="log send to remote",
-	long_description=long_description + '\n\n' + changes,
-	long_description_content_type="text/markdown",
+	long_description=readme + '\n\n' + changes,
 	keywords='logging',
-
+	author_email='netkiller@msn.com',
 	url='http://netkiller.github.io',
 	download_url='https://github.com/netkiller/logging',
 	license='BSD',
 	classifiers=[
+		'Development Status :: Production/Stable',
 		'Environment :: Console',
 		'Intended Audience :: Developers',
 		'License :: OSI Approved :: BSD License',
@@ -37,8 +33,9 @@ setup(
 	#],
 	
 	#package_dir={ '': 'library' },
-	packages=find_packages(),
-	# packages=[''],
+	packages=[
+		''
+	],
 	scripts=[
 		'bin/auditlog',
 		'bin/rlog',
