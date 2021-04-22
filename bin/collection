@@ -31,7 +31,7 @@ class Collection():
 	def __init__(self):
 		self.basedir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 		self.cfgfile=self.basedir+'/etc/logging.ini'
-		self.config = configparser.SafeConfigParser()
+		self.config = configparser.ConfigParser()
 		
 		if not os.path.exists(self.cfgfile):
 			raise Exception('Cannot open file', self.cfgfile)
