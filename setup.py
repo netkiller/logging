@@ -36,7 +36,7 @@ setup(
 	#	'library.whiptail'
 	#],
 	
-	#package_dir={ '': 'library' },
+	#package_dir={ '': 'src' },
 	packages=find_packages(),
 	scripts=[
 		'bin/auditlog',
