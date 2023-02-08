@@ -12,7 +12,7 @@ with open("CHANGES.md", "r") as file:
 setup(
 	name='netkiller-logging',
 	#version=__version__,
-	version='0.0.5',
+	version='0.0.6',
 	#author=__author__,
 	author_email='netkiller@msn.com',
 	description="log send to remote",
@@ -31,6 +31,7 @@ setup(
 		'Programming Language :: Python',
 		'Programming Language :: Python :: 3.4',
 	],
+	install_requires = ['netkiller-devops'],
 	#py_modules=[
 	#	'library.rsync',
 	#	'library.whiptail'

@@ -1,0 +1,70 @@
+input {
+  tcp {
+	port => 4567 
+	codec => json_lines
+  }
+  gelf { 
+    port => 12201
+    use_udp => true
+    use_tcp => true
+  }
+}
+
+filter {
+	ruby {
+	    code => "event.set('datetime', event.get('@timestamp').time.localtime.strftime('%Y-%m-%d %H:%M:%S'))"
+	}
+}
+
+output {
+    if [marker] {
+    file {
+    	path => "/opt/log/%{environment}/%{service}/%{marker}.%{+yyyy}-%{+MM}-%{+dd}.log"
+    	codec => line { format => "[%{datetime}] %{level} %{message}"}
+    }
+    } else {
+        file {
+            path => "/opt/log/%{environment}/%{service}/unknow.%{+yyyy}-%{+MM}-%{+dd}.log"
+            codec => line { format => "[%{datetime}] [%{host}:%{source_host}] [%{level}] (%{class}.%{method}:%{line}) - %{message}"}
+        }
+    }
+    file {
+        path => "/opt/log/%{environment}/%{service}/unknow.%{+yyyy}-%{+MM}-%{+dd}.json.gz"
+		codec => json_lines
+        gzip => true
+    }
+    if [environment] =~ /(prod|grey)/ {
+        if "ERROR" in [level] {
+            http {
+                url => "https://oapi.dingtalk.com/robot/send?access_token=f9257740a0ec06ae40f95b0b052e69c699400eaa5db316613f084b0162de90f8"
+                http_method => "post"
+                content_type => "application/json; charset=utf-8"
+                format => "message"
+                message => '{"msgtype":"text","text":{"content":"时间：%{datetime}\n主机：%{host}[%{source_host}]\n环境：%{environment}\n服务：%{service}\n消息：%{message}"}}'
+            }
+        }
+        if "WARN" in [level] {
+            http {
+                url => "https://oapi.dingtalk.com/robot/send?access_token=d6602c6fb6b47250f39a57e68d31f791968a12201a6980f3a117582afca7678b"
+                http_method => "post"
+                content_type => "application/json; charset=utf-8"
+                format => "message"
+                message => '{"msgtype":"text","text":{"content":"时间：%{datetime}\n主机：%{host}[%{source_host}]\n环境：%{environment}\n服务：%{service}\n消息：%{message}"}}'
+            }
+        }
+    }
+    
+    if [environment] =~ /(pre|test|dev|office)/ {
+        if ("ERROR" in [level] or "WARN" in [level]) {
+            http {
+                url => "https://oapi.dingtalk.com/robot/send?access_token=9501f8d9b9dfdac2a83188517fcbd204c89bf5f47788bda85bd353d8e266fb5f"
+                http_method => "post"
+                content_type => "application/json; charset=utf-8"
+                format => "message"
+                message => '{"msgtype":"text","text":{"content":"时间：%{datetime}\n主机：%{host}[%{source_host}]\n环境：%{environment}\n服务：%{service}\n消息：%{message}"}}'
+            }
+        }
+    }
+
+}
+

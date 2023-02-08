@@ -168,7 +168,7 @@ class Auditlog():
 	def main(self):
 		try:
 			usage = "usage: %prog [options] <module>"
-			usage += "\n  Homepage: http://netkiller.github.io  Author: Neo <netkiller@msn.com>"
+			usage += "\n  Homepage: https://www.netkiller.cn  Author: Neo <netkiller@msn.com>"
 			self.parser = OptionParser(usage, version='0.0.1', description='log filter')
 
 			self.parser.add_option('-d','--daemon', dest='daemon', action='store_true', default=False, help='run as daemon')

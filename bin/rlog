@@ -143,7 +143,7 @@ class Logpush():
 			#time.sleep(sleep)
 		
 	def usage(self):
-		print("\n  Homepage: http://netkiller.github.io\tAuthor: Neo <netkiller@msn.com>")				
+		print("\n  Homepage: https://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")				
 	def main(self):
 		try:
 			parser = OptionParser(usage='usage: %prog [options] filename')
