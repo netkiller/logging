@@ -75,11 +75,20 @@ vsftpd.volumes([
     '/opt:/home/vsftpd:ro'
 ])
 
-development = Composes('development')
-development.workdir('/var/tmp/development')
-development.version('3.9')
-development.services(logstash)
-development.services(vsftpd)
+caddy = Services('caddy')
+caddy.image('caddy:latest')
+caddy.container_name('caddy')
+caddy.restart('unless-stopped')
+caddy.ports(['80:80'])
+caddy.volumes(['/opt/log:/usr/share/caddy'])
+caddy.command(['/usr/bin/caddy','file-server','--browse', '--root', '/usr/share/caddy'])
+
+logging = Composes('logging')
+logging.workdir('/var/tmp/development')
+logging.version('3.9')
+logging.services(logstash)
+logging.services(vsftpd)
+logging.services(caddy)
 
 if __name__ == '__main__':
     try:
@@ -87,7 +96,7 @@ if __name__ == '__main__':
             # {'DOCKER_HOST': 'ssh://root@192.168.30.11'}
         )
         # docker.sysctl({'neo': '1'})
-        docker.environment(development)
+        docker.environment(logging)
         docker.main()
     except KeyboardInterrupt:
         print("Crtl+C Pressed. Shutting down.")
