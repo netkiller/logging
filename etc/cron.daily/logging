@@ -1,0 +1,4 @@
+# Run the daily jobs for compress log
+# https://www.netkiller.cn
+
+find /opt/log/ -type f -name "*.log" -mtime +5 -exec gzip {} \;
