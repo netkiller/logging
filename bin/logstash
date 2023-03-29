@@ -47,6 +47,7 @@ logstash.volumes(
         '/srv/logstash/pipeline/config.conf:/usr/share/logstash/pipeline.d/config.conf',
         '/srv/logstash/pipeline/filebeat.conf:/usr/share/logstash/pipeline.d/filebeat.conf',
         #'/srv/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:rw',
+        '/etc/localtime:/etc/localtime', '/usr/share/zoneinfo:/usr/share/zoneinfo',
         '/srv/logstash/logs/:/usr/share/logstash/logs/',
         '/opt/log/:/opt/log/',
         '/proc:/proc','/sys:/sys'

@@ -12,7 +12,7 @@ with open("CHANGES.md", "r") as file:
 setup(
 	name='netkiller-logging',
 	#version=__version__,
-	version='0.0.6',
+	version='0.0.7',
 	#author=__author__,
 	author_email='netkiller@msn.com',
 	description="log send to remote",
@@ -20,7 +20,7 @@ setup(
 	long_description_content_type="text/markdown",
 	keywords='logging',
 
-	url='http://netkiller.github.io',
+	url='https://www.netkiller.cn',
 	download_url='https://github.com/netkiller/logging',
 	license='BSD',
 	classifiers=[
