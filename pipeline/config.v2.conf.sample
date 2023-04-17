@@ -1,0 +1,89 @@
+input {
+  tcp {
+	port => 4567 
+	codec => json_lines
+  }
+  gelf { 
+    port => 12201
+    use_udp => true
+    use_tcp => true
+  }
+}
+
+filter {
+	ruby {
+	    code => "event.set('datetime', event.get('@timestamp').time.localtime.strftime('%Y-%m-%d %H:%M:%S'))"
+	}
+}
+
+output {
+    if [marker] {
+        file {
+        	path => "/opt/log/%{environment}/%{service}/%{+MM}/%{marker}.%{+yyyy}-%{+MM}-%{+dd}.log"
+        	codec => line { format => "[%{datetime}] %{level} %{message}"}
+        }
+    } else {
+        file {
+            path => "/opt/log/%{environment}/%{service}/%{+MM}/%{+dd}/spring.%{level}.%{+yyyy}-%{+MM}-%{+dd}.log"
+            codec => line { format => "[%{datetime}] [%{host}:%{source_host}] [%{level}] (%{class}.%{method}:%{line}) - %{message}"}
+        }
+    }
+    file {
+        path => "/opt/log/%{environment}/%{service}/%{+MM}/unknow.%{+yyyy}-%{+MM}-%{+dd}.json.gz"
+	    codec => json_lines
+        gzip => true
+    }
+    if [environment] =~ /(prod|grey)/ {
+        if "ERROR" in [level] {
+            http {
+                url => "https://oapi.dingtalk.com/robot/send?access_token=f9257740a0ec052e69c699400eaa5db316613f086ae40f95b0b04b0162de90f8"
+                http_method => "post"
+                content_type => "application/json; charset=utf-8"
+                format => "message"
+                message => '{"msgtype":"text","text":{"content":"时间：%{datetime}\n主机：%{host}[%{source_host}]\n环境：%{environment}\n服务：%{service}\n消息：%{message}"}}'
+            }
+        }
+        if "WARN" in [level] {
+            http {
+                url => "https://oapi.dingtalk.com/robot/send?access_token=d6602c6f57e68d31f791968a12201a6980f3a117582afb6b47250f39aca7678b"
+                http_method => "post"
+                content_type => "application/json; charset=utf-8"
+                format => "message"
+                message => '{"msgtype":"text","text":{"content":"时间：%{datetime}\n主机：%{host}[%{source_host}]\n环境：%{environment}\n服务：%{service}\n消息：%{message}"}}'
+            }
+        }
+    }
+
+    if "compute" in [marker] and "prod" in [environment] {
+	file {
+        	path => "/opt/log/%{environment}/%{service}/%{marker}.log"
+	        codec => line { format => "[%{datetime}] %{level} %{message}"}
+    	}
+        http {
+            url => "https://oapi.dingtalk.com/robot/send?access_token=324ab12a36bcb2bb788720c95a8f5fa00974486218f2517deb52297934310c7f"
+            http_method => "post"
+            content_type => "application/json; charset=utf-8"
+            format => "message"
+            message => '{"msgtype":"text","text":{"content":"时间：%{datetime}\n主机：%{host}[%{source_host}]\n环境：%{environment}\n服务：%{service}\n消息：%{message}"}}'
+        }
+        http {
+            url => "http://zentao.ejiayou.com/zentao/gitlab.php?type=task&func=create&name=服务%{service}环境%{environment}"
+            http_method => "post"
+            format => "form"
+	    mapping => {"message" => "时间：%{datetime}</br>主机：%{host}[%{source_host}]</br>环境：%{environment}</br>服务：%{service}</br>消息：%{message}"}
+        }
+    } 
+
+    if [environment] =~ /(pre|test|dev|office)/ {
+        if ("ERROR" in [level] or "WARN" in [level]) {
+            http {
+                url => "https://oapi.dingtalk.com/robot/send?access_token=9501f8d9b9df88bda85bd353dac2a83188517fcbd204c89bf5f477d8e266fb5f"
+                http_method => "post"
+                content_type => "application/json; charset=utf-8"
+                format => "message"
+                message => '{"msgtype":"text","text":{"content":"时间：%{datetime}\n主机：%{host}[%{source_host}]\n环境：%{environment}\n服务：%{service}\n消息：%{message}"}}'
+            }
+        }
+    }
+
+}
