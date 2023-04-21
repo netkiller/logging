@@ -81,8 +81,11 @@ caddy.image('caddy:latest')
 caddy.container_name('caddy')
 caddy.restart('unless-stopped')
 caddy.ports(['80:80'])
-caddy.volumes(['/opt/log:/usr/share/caddy'])
-caddy.command(['/usr/bin/caddy','file-server','--browse', '--root', '/usr/share/caddy'])
+#caddy.volumes(['/opt/log:/usr/share/caddy'])
+#caddy.command(['/usr/bin/caddy','file-server','--browse', '--root', '/usr/share/caddy'])
+# http auth: caddy hash-password
+caddy.volumes(['/opt/log:/usr/share/caddy','/srv/logstash/config/Caddyfile:/etc/Caddyfile'])
+caddy.command(['caddy', 'run', '--config', '/etc/Caddyfile'])
 
 logging = Composes('logging')
 logging.workdir('/var/tmp/development')

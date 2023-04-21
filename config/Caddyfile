@@ -1,0 +1,11 @@
+:80 {
+    root * /usr/share/caddy
+    encode zstd gzip
+    file_server browse
+    log {
+	output stdout
+    }
+    basicauth /finance/* {
+	finance	$2a$14$UxD5pZ1cCFwkKScuK9D3lucD/cGTEpOPWV8BWY6h2GnCpTeV.reLG
+    }
+}
