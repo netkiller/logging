@@ -35,7 +35,7 @@ logstash.restart('always')
 # logstash.hostname('www.netkiller.cn')
 # openrelogstashsty.extra_hosts(extra_hosts)
 logstash.extra_hosts(['elasticsearch:127.0.0.1'])
-logstash.environment(['TZ=Asia/Shanghai','XPACK_MONITORING_ENABLED=false','LOG_LEVEL=info'])
+logstash.environment(['TZ=Asia/Shanghai','XPACK_MONITORING_ENABLED=false','LOG_LEVEL=info','PIPELINE_WORKERS=8'])
 logstash.ports(['12201:12201/udp', '12201:12201/tcp','5044:5044'])
 #logstash.ports(['12201:12201','4567:4567'])
 # logstash.depends_on('test')
@@ -46,6 +46,7 @@ logstash.volumes(
         '/srv/logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml',
         '/srv/logstash/pipeline/config.conf:/usr/share/logstash/pipeline.d/config.conf',
         '/srv/logstash/pipeline/filebeat.conf:/usr/share/logstash/pipeline.d/filebeat.conf',
+        '/srv/logstash/config/jvm.options:/usr/share/logstash/config/jvm.options',
         #'/srv/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:rw',
         '/etc/localtime:/etc/localtime', '/usr/share/zoneinfo:/usr/share/zoneinfo',
         '/srv/logstash/logs/:/usr/share/logstash/logs/',

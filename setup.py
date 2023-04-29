@@ -12,7 +12,7 @@ with open("CHANGES.md", "r") as file:
 setup(
 	name='netkiller-logging',
 	#version=__version__,
-	version='0.0.7',
+	version='0.0.8',
 	#author=__author__,
 	author_email='netkiller@msn.com',
 	description="log send to remote",
